@@ -8,3 +8,4 @@ services:
       - .:/code
     environment:
       - DATABASE_URL=sqlite:///./blockchain.db
+      - PSA_ACCESS_TOKEN=DYC7E8IAEWISfwdUau5GhGZ4qGfaReAV6A4AXEMJDZTKDeqX_gSfmiiEuA7NKaUjGS2uw05crhqz4b5PpjlgDoqMQjZtKdZBVmSfUFFp43rNyuUosWKl3DR0d5b5oLYtX9AwsEBZrrVzOmL0Zr1q1MLQlBpMUgnK9K89jGxtN7GWvxZrhDMVI53S7tmDnNUNfxJA6dbuFoTeAZKMGiQQ6tISC-8OeFbPwbMSE-VDNWtEDGFPm_Gb1cU8plfAMw69jlSnWe_fhA-sG6-kfV04EUBit3jJf2huaFEI5-R1MGQuoph9
