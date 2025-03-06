@@ -34,3 +34,12 @@ class PsaCert(Base):
     population_higher = Column(Integer, nullable=False)
 
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+
+class SellOrders(Base):
+    __tablename__ = "sell_orders"
+
+    id = Column(Integer, primary_key=True, index=True)
+    nft_id = Column(Integer, ForeignKey("psa_certs.id"), nullable=False)
+    taker_pays = Column(Integer, nullable=False)
+    destination = Column(String, nullable=True)
+    sell_hash = Column(String, nullable=False, index=True)

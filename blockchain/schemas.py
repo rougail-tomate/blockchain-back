@@ -1,7 +1,8 @@
 from pydantic import BaseModel
 from typing import List
 from pydantic_sqlalchemy  import sqlalchemy_to_pydantic
-from blockchain.models.user import PsaCert
+from blockchain.models.user import PsaCert, SellOrders
+
 class PsaNumberCreate(BaseModel):
     number: int
 class UserCreate(BaseModel):
@@ -23,6 +24,11 @@ class UserOut(BaseModel):
 
 
 PsaCertBase = sqlalchemy_to_pydantic(PsaCert, exclude=["id"])
+SellOrders = sqlalchemy_to_pydantic(SellOrders, exclude=["id", "sell_hash"])
+
+class BuyOrder:
+    wallet: str
+    sell_hash: str
 
 class PsaCertOut(BaseModel):
     psaCerts: List[PsaCertBase]

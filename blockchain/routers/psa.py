@@ -9,6 +9,7 @@ import json
 
 router = APIRouter()
 PSA_ACCESS_TOKEN = os.environ.get("PSA_ACCESS_TOKEN")
+
 if PSA_ACCESS_TOKEN is None:
     raise ValueError("PSA_ACCESS_TOKEN not found")
 
