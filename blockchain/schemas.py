@@ -8,7 +8,7 @@ class PsaNumberCreate(BaseModel):
     description: str
     price : str
     image : str
-    
+
 class UserCreate(BaseModel):
     username: str
     email: str
@@ -23,7 +23,16 @@ class UserOut(BaseModel):
     id: int
     username: str
     email: str
-    id_metamask: str
+    id_metamask: Optional[str] = None
+
+    class Config:
+        orm_mode = True
+
+class UserAuthResponse(BaseModel):
+    access_token: str
+    refresh_token: str
+    token_type: str
+    user: UserOut
 
     class Config:
         orm_mode = True

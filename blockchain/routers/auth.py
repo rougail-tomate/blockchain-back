@@ -54,7 +54,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     except jwt.JWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
-@router.post("/register", response_model=schemas.UserOut)
+@router.post("/register", response_model=schemas.UserAuthResponse)
 def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user = db.query(User).filter(User.username == user.username).first()
     if db_user:
@@ -69,12 +69,12 @@ def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     access_token = create_access_token(data={"sub": db_user.username}, expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
     refresh_token = create_refresh_token(data={"sub": db_user.username}, expires_delta=timedelta(days=REFRESH_TOKEN_EXPI))
 
-    return {
-        "access_token": access_token,
-        "refresh_token": refresh_token,
-        "token_type": "bearer",
-        "user": db_user
-    }
+    return schemas.UserAuthResponse(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        token_type="bearer",
+        user=db_user
+    )
 
 @router.post("/login")
 def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
