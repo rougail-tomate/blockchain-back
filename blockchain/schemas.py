@@ -4,6 +4,11 @@ from pydantic_sqlalchemy  import sqlalchemy_to_pydantic
 from blockchain.models.user import PsaCert
 class PsaNumberCreate(BaseModel):
     number: int
+    title: str
+    description: str
+    price : str
+    image : str
+    
 class UserCreate(BaseModel):
     username: str
     email: str

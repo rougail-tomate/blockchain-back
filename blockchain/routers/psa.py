@@ -66,20 +66,15 @@ def add_psa_number(
         spec_number=cert_data["PSACert"]["SpecNumber"],
         label_type=cert_data["PSACert"]["LabelType"],
         reverse_bar_code=cert_data["PSACert"]["ReverseBarCode"],
-        year=cert_data["PSACert"]["Year"],
         brand=cert_data["PSACert"]["Brand"],
         category=cert_data["PSACert"]["Category"],
-        card_number=cert_data["PSACert"]["CardNumber"],
         subject=cert_data["PSACert"]["Subject"],
-        variety=cert_data["PSACert"]["Variety"],
-        is_psadna=cert_data["PSACert"]["IsPSADNA"],
-        is_dual_cert=cert_data["PSACert"]["IsDualCert"],
-        grade_description=cert_data["PSACert"]["GradeDescription"],
         card_grade=cert_data["PSACert"]["CardGrade"],
-        total_population=cert_data["PSACert"]["TotalPopulation"],
-        total_population_with_qualifier=cert_data["PSACert"]["TotalPopulationWithQualifier"],
-        population_higher=cert_data["PSACert"]["PopulationHigher"],
         user_id=current_user.id
+        title=number.title,
+        description=number.description,
+        price=number.price,
+        image=number.image
     )
 
     db.add(new_number)
