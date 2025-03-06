@@ -1,7 +1,8 @@
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 from pydantic_sqlalchemy  import sqlalchemy_to_pydantic
 from blockchain.models.user import PsaCert
+
 class PsaNumberCreate(BaseModel):
     number: int
     title: str

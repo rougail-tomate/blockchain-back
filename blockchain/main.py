@@ -1,7 +1,6 @@
 import dotenv
 dotenv.load_dotenv()
 
-
 from fastapi import FastAPI
 from blockchain.routers import auth, psa
 from blockchain.database import engine, Base
