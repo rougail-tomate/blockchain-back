@@ -46,6 +46,17 @@ def get_psa_numbers_by_user_id(
     psa_certs = db.query(PsaCert).filter(PsaCert.user_id == current_user.id).all()
     return {"psaCerts": psa_certs}
 
+@router.get("/get-all-numbers", response_model=schemas.PsaCertOut)
+def get_all_psa_numbers(
+    db: Session = Depends(get_db)
+):
+    psa_certs = db.query(PsaCert).all()
+
+    if not psa_certs:
+        raise HTTPException(status_code=404, detail="No PSA numbers found in the database")
+    
+    return {"psaCerts": psa_certs}
+
 @router.post("/users/add-numbers", response_model=schemas.PsaCertBase)
 def add_psa_number(
     number: schemas.PsaNumberCreate, 
