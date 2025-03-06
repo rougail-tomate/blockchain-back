@@ -37,6 +37,16 @@ def get_current_user(token: str = Security(oauth2_scheme), db: Session = Depends
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
+@router.get("/get-number/{cert_id}", response_model=schemas.PsaCertOut)
+def get_psa_number_by_cert_id(cert_id: int, db: Session = Depends(get_db)):
+    psa_cert = db.query(PsaCert).filter(PsaCert.id == cert_id).first()
+
+    if not psa_cert:
+        raise HTTPException(status_code=404, detail="PSA number not found")
+
+    return psa_cert
+
+
 @router.get("/users/get-numbers", response_model=schemas.PsaCertOut)
 def get_psa_numbers_by_user_id(
     db: Session = Depends(get_db),
