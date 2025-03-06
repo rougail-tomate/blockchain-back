@@ -61,7 +61,7 @@ def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Username already registered")
     
     hashed_password = hash_password(user.password)
-    db_user = User(username=user.username, email=user.email, password=hashed_password)
+    db_user = User(username=user.username, email=user.email, password=hashed_password, id_metamask=user.id_metamask)
     db.add(db_user)
     db.commit()
     db.refresh(db_user)

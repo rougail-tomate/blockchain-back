@@ -8,6 +8,7 @@ class UserCreate(BaseModel):
     username: str
     email: str
     password: str
+    id_metamask: str
 
 class UserLogin(BaseModel):
     username: str
@@ -17,6 +18,7 @@ class UserOut(BaseModel):
     id: int
     username: str
     email: str
+    id_metamask: str
 
     class Config:
         orm_mode = True

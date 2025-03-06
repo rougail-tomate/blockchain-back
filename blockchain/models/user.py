@@ -9,6 +9,7 @@ class User(Base):
     username = Column(String, unique=True, index=True)
     email = Column(String, unique=True, index=True)
     password = Column(String, nullable=False)
+    id_metamask = Column(String, nullable=False)
 
 class PsaCert(Base):
     __tablename__ = "psa_certs"
