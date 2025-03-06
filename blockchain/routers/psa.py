@@ -70,7 +70,7 @@ def add_psa_number(
         category=cert_data["PSACert"]["Category"],
         subject=cert_data["PSACert"]["Subject"],
         card_grade=cert_data["PSACert"]["CardGrade"],
-        user_id=current_user.id
+        user_id=current_user.id,
         title=number.title,
         description=number.description,
         price=number.price,
