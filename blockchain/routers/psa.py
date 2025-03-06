@@ -6,26 +6,52 @@ from blockchain.models.user import User, PsaCert
 import requests
 import os
 import json
+from fastapi.security import OAuth2PasswordBearer
+from jose import jwt, JWTError
+from fastapi import Security
+from datetime import datetime, timedelta
+
+SECRET_KEY = os.environ.get("SECRET_KEY")
+ALGORITHM = "HS256"
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 router = APIRouter()
 PSA_ACCESS_TOKEN = os.environ.get("PSA_ACCESS_TOKEN")
 if PSA_ACCESS_TOKEN is None:
     raise ValueError("PSA_ACCESS_TOKEN not found")
 
+def get_current_user(token: str = Security(oauth2_scheme), db: Session = Depends(get_db)):
+    print(f"Token reçu: {token}")
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        
+        user = db.query(User).filter(User.username == username).first()
+        if user is None:
+            raise HTTPException(status_code=401, detail="User not found")
+        
+        return user
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid token")
 
-@router.get("/users/{user_id}/numbers", response_model=schemas.PsaCertOut)
-def get_psa_numbers_by_user_id(user_id: int, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.id == user_id).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    psa_certs = db.query(PsaCert).filter(PsaCert.user_id == user_id).all()
+@router.get("/users/get-numbers", response_model=schemas.PsaCertOut)
+def get_psa_numbers_by_user_id(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+
+    psa_certs = db.query(PsaCert).filter(PsaCert.user_id == current_user.id).all()
     return {"psaCerts": psa_certs}
 
-@router.post("/users/{user_id}/numbers", response_model=schemas.PsaCertBase)
-def add_psa_number(user_id: int, number: schemas.PsaNumberCreate, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.id == user_id).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+@router.post("/users/add-numbers", response_model=schemas.PsaCertBase)
+def add_psa_number(
+    number: schemas.PsaNumberCreate, 
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
 
     cert_data = verify_psa_number(number.number)
     if not cert_data:
@@ -53,7 +79,7 @@ def add_psa_number(user_id: int, number: schemas.PsaNumberCreate, db: Session = 
         total_population=cert_data["PSACert"]["TotalPopulation"],
         total_population_with_qualifier=cert_data["PSACert"]["TotalPopulationWithQualifier"],
         population_higher=cert_data["PSACert"]["PopulationHigher"],
-        user_id=user_id
+        user_id=current_user.id
     )
 
     db.add(new_number)

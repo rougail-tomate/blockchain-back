@@ -6,3 +6,6 @@ passlib
 requests
 python-dotenv
 pydantic-sqlalchemy
+pyjwt
+python-multipart
+python-jose
