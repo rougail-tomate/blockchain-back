@@ -92,14 +92,17 @@ def read_users_me(current_user: User = Depends(get_current_user)):
 
 
 @router.post("/refresh-token")
-def refresh_access_token(refresh_token: str):
+def refresh_access_token(token_data: schemas.RefreshTokenRequest):
     try:
-        payload = jwt.decode(refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token_data.refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
         if username is None:
             raise HTTPException(status_code=401, detail="Invalid refresh token")
 
-        access_token = create_access_token(data={"sub": username}, expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+        access_token = create_access_token(
+            data={"sub": username}, 
+            expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        )
 
         return {"access_token": access_token}
 

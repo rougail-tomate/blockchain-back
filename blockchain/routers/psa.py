@@ -65,7 +65,8 @@ def get_all_psa_numbers(
     psa_certs = db.query(PsaCert).all()
 
     if not psa_certs:
-        raise HTTPException(status_code=404, detail="No PSA numbers found in the database")
+        return { "psaCerts": [] }
+        #raise HTTPException(status_code=404, detail="No PSA numbers found in the database")
     
     return {"psaCerts": psa_certs}
 
