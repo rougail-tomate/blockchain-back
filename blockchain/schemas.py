@@ -55,3 +55,7 @@ class PsaCertOut(BaseModel):
 
 class RefreshTokenRequest(BaseModel):
     refresh_token: str
+
+class RetrieveNfts(BaseModel):
+    user_id: int
+    wallet: str

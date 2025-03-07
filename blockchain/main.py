@@ -2,7 +2,7 @@ import dotenv
 dotenv.load_dotenv()
 
 from fastapi import FastAPI
-from blockchain.routers import auth, psa
+from blockchain.routers import auth, psa, xrpl
 from blockchain.database import engine, Base
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -24,3 +24,4 @@ blockchain.add_middleware(
 
 blockchain.include_router(auth.router)
 blockchain.include_router(psa.router)
+blockchain.include_router(xrpl.router)

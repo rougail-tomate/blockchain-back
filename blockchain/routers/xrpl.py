@@ -22,11 +22,14 @@ client = JsonRpcClient(XRPL_RPC_URL)
 router = APIRouter()
 
 @router.get("/nfts")
-def get_nfts(userid: int, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.id == userid).first()
+def get_nfts(userBody: schemas.RetrieveNfts, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == userBody.user_id).first()
+    user_wallet = Wallet.from_seed(userBody.wallet)
+    print("wallet address = ", user_wallet.address)
+    # print("user id in account = ", userBody.wallet)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    nfts = AccountNFTs(account=user.wallet)
+    nfts = AccountNFTs(account=user_wallet.address)
     return client.request(nfts).result
 
 @router.post("/sell")
