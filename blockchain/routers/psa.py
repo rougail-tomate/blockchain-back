@@ -69,6 +69,9 @@ def get_all_psa_numbers(
     
     return {"psaCerts": psa_certs}
 
+# TODO add item in SellsOrder db if is_selling is true
+#  
+# TODO add in PsaCert is_selling column to sells items 
 @router.post("/users/add-numbers", response_model=schemas.PsaCertBase)
 def add_psa_number(
     number: schemas.PsaNumberCreate, 
@@ -100,11 +103,12 @@ def add_psa_number(
         wallet=number.wallet
     )
 
+    res = mint_token(wallet=number.wallet, uri=f"http://localhost:8000/get-number/{number.number}") 
+    print(res)
     db.add(new_number)
     db.commit()
     db.refresh(new_number)
 
-    res = mint_token(wallet=number.wallet, uri=f"http://localhost:8000/get-number/{number.number}") 
     print(res)
 
     return new_number
