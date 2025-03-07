@@ -134,6 +134,8 @@ def add_psa_number(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    print(current_user)
+    # print(number)
     cert_data = verify_psa_number(number.number)
     if not cert_data:
         raise HTTPException(status_code=400, detail="Invalid PSA number")
@@ -141,6 +143,9 @@ def add_psa_number(
     if verify_psa_number_duplicate(number.number, db):
         raise HTTPException(status_code=400, detail="PSA number already exists")
 
+    res = mint_token(wallet=number.wallet, uri=f"http://localhost:8000/get-number/{number.number}")
+
+    print('TOKEN ID = ', res['meta']['nftoken_id'])
     new_number = PsaCert(
         cert_number=number.number,
         spec_id=cert_data["PSACert"]["SpecID"],
@@ -157,11 +162,12 @@ def add_psa_number(
         price=number.price,
         image=number.image,
         wallet=number.wallet,
-        is_selling=number.is_selling
+        is_selling=number.is_selling,
+        nftoken_id=res['meta']['nftoken_id']
     )
 
-    res = mint_token(wallet=number.wallet, uri=f"http://localhost:8000/get-number/{number.number}") 
-    print(res)
+    # if (number.is_selling is True):
+    # print(res)
     db.add(new_number)
     db.commit()
     db.refresh(new_number)

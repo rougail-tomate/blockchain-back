@@ -60,3 +60,9 @@ class RefreshTokenRequest(BaseModel):
 class RetrieveNfts(BaseModel):
     user_id: int
     wallet: str
+
+class SellOrder(BaseModel):
+    cert_number: int
+    user_id: int
+    taker_pay: int
+    destination: str

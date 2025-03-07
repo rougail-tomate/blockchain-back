@@ -33,6 +33,7 @@ class PsaCert(Base):
     wallet = Column(String, nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     is_selling = Column(Boolean, nullable=False, default=False)
+    nftoken_id = Column(String, nullable=True)
 
 class SellOrders(Base):
     __tablename__ = "sell_orders"

@@ -33,34 +33,38 @@ def get_nfts(userBody: schemas.RetrieveNfts, db: Session = Depends(get_db)):
     return client.request(nfts).result
 
 @router.post("/sell")
-def add_sell_order(sell_order: schemas.SellOrders, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.id == sell_order.seller_id).first()
+def add_sell_order(sell_order: schemas.SellOrder, db: Session = Depends(get_db)):
+    print("SELL ORDER = ", sell_order)
+    user = db.query(User).filter(User.id == sell_order.user_id).first()
+    user_wallet = Wallet.from_seed(user.id_metamask)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    nft = db.query(PsaCert).filter(PsaCert.id == sell_order.nft_id).first()
+    nft = db.query(PsaCert).filter(PsaCert.cert_number == sell_order.cert_number).first()
     if not nft:
         raise HTTPException(status_code=404, detail="NFT not found")
-    
-    if sell_order.destination is None:
-        sell_offer = NFTokenCreateOffer(
-            account=user.wallet,
-            taker_gets=nft.id, taker_pays=str(sell_order.taker_pays),
-            amount=str(sell_order.taker_pays), flags=1
-        )
-    else:
-        sell_offer = NFTokenCreateOffer(
-            account=user.wallet,
-            taker_gets=nft.id, taker_pays=str(sell_order.taker_pays),
-            amount=str(sell_order.taker_pays), destination=sell_order.destination,
-            flags=1
-        )
-    response = client.request(sell_offer)
+
+    sell_offer = NFTokenCreateOffer(
+        account=user_wallet.address,
+        nftoken_id=nft.nftoken_id,
+        amount=str(sell_order.taker_pay * 1000000), destination=sell_order.destination,
+        flags=1
+    )
+    response = submit_and_wait(sell_offer, client, user_wallet)
+
+    # response = client.request(sell_offer)
     if response.is_successful():
-        sell_order.sell_hash = response.result["hash"]
-        db.add(sell_order)
+        order = SellOrders(
+            nft_id=sell_order.cert_number,
+            taker_pays=sell_order.taker_pay,
+            destination=sell_order.destination,
+            sell_hash=""
+
+        )
+        order.sell_hash = response.result["hash"]
+        db.add(order)
         db.commit()
-        db.refresh(sell_order)
-        return sell_order
+        db.refresh(order)
+        return order
     else:
         return response.result
 
@@ -81,6 +85,13 @@ def mint_token(wallet: str, uri: str):
     response = submit_and_wait(mint_tx, client, user_wallet)
     print("Response ", response)
     return response.result
+
+def get_nft_data(wallet_owner, uri):
+    user_wallet = Wallet.from_seed(wallet_owner)
+    print("wallet address = ", user_wallet.address)
+    # print("user id in account = ", userBody.wallet)
+    nfts = AccountNFTs(account=user_wallet.address)
+    return client.request(nfts).result
 
 '''
 @router.post("/buy")
