@@ -15,7 +15,7 @@ from blockchain.models.user import User, PsaCert, SellOrders
 from .. import schemas
 
 XRPL_RPC_URL = "https://s.altnet.rippletest.net:51234"
-client = JsonRpcClient(XRPL_RPC_URL)
+# client = JsonRpcClient(XRPL_RPC_URL)
 #  replace this by using the wallet of the user
 # wallet1 = Wallet.from_seed("sEd7CWyK17UAD2VwC8LdAqbDWS896eF")
 
@@ -23,6 +23,7 @@ router = APIRouter()
 
 @router.get("/nfts")
 def get_nfts(userBody: schemas.RetrieveNfts, db: Session = Depends(get_db)):
+    client = JsonRpcClient(XRPL_RPC_URL)
     user = db.query(User).filter(User.id == userBody.user_id).first()
     user_wallet = Wallet.from_seed(userBody.wallet)
     print("wallet address = ", user_wallet.address)
@@ -34,6 +35,7 @@ def get_nfts(userBody: schemas.RetrieveNfts, db: Session = Depends(get_db)):
 
 @router.post("/sell")
 def add_sell_order(sell_order: schemas.SellOrder, db: Session = Depends(get_db)):
+    client = JsonRpcClient(XRPL_RPC_URL)
     print("SELL ORDER = ", sell_order)
     user = db.query(User).filter(User.id == sell_order.user_id).first()
     user_wallet = Wallet.from_seed(user.id_metamask)
@@ -46,11 +48,11 @@ def add_sell_order(sell_order: schemas.SellOrder, db: Session = Depends(get_db))
     sell_offer = NFTokenCreateOffer(
         account=user_wallet.address,
         nftoken_id=nft.nftoken_id,
-        amount=str(sell_order.taker_pay * 1000000), destination=sell_order.destination,
+        amount=str(sell_order.taker_pay * 1000000), destination=None,
         flags=1
     )
     response = submit_and_wait(sell_offer, client, user_wallet)
-
+    print("RESPONSE ON SELL", response)
     # response = client.request(sell_offer)
     if response.is_successful():
         order = SellOrders(
@@ -58,9 +60,8 @@ def add_sell_order(sell_order: schemas.SellOrder, db: Session = Depends(get_db))
             taker_pays=sell_order.taker_pay,
             destination=sell_order.destination,
             sell_hash=""
-
         )
-        order.sell_hash = response.result["hash"]
+        order.sell_hash = response.result["meta"]["offer_id"]
         db.add(order)
         db.commit()
         db.refresh(order)
@@ -68,8 +69,27 @@ def add_sell_order(sell_order: schemas.SellOrder, db: Session = Depends(get_db))
     else:
         return response.result
 
-def mint_token(wallet: str, uri: str):
+@router.post("/buy")
+def buy_order(buy_order: schemas.BuyOrder, db: Session = Depends(get_db)):
+    client = JsonRpcClient(XRPL_RPC_URL)
+    sell_order = db.query(SellOrders).filter(SellOrders.sell_hash == buy_order.sell_hash).first()
+    user_wallet = Wallet.from_seed(buy_order.wallet)
 
+    if not sell_order:
+        raise HTTPException(status_code=404, detail="Sell order not found")
+
+    buy_offer = NFTokenAcceptOffer(
+        account=user_wallet.address, nftoken_sell_offer=sell_order.sell_hash
+    )
+
+    response = submit_and_wait(buy_offer, client, user_wallet)
+    if response.is_successful():
+        db.query(SellOrders).filter(SellOrders.nft_id == sell_order.nft_id).delete()
+        db.commit()
+    return response.result
+
+def mint_token(wallet: str, uri: str):
+    client = JsonRpcClient(XRPL_RPC_URL)
     print("wallet = ", wallet)
     user_wallet = Wallet.from_seed(wallet)
     print("wallet address = ", user_wallet.address)
@@ -87,27 +107,16 @@ def mint_token(wallet: str, uri: str):
     return response.result
 
 def get_nft_data(wallet_owner, uri):
+    client = JsonRpcClient(XRPL_RPC_URL)
     user_wallet = Wallet.from_seed(wallet_owner)
     print("wallet address = ", user_wallet.address)
     # print("user id in account = ", userBody.wallet)
     nfts = AccountNFTs(account=user_wallet.address)
     return client.request(nfts).result
 
-'''
-@router.post("/buy")
-def buy_order(buy_order: schemas.BuyOrder, db: Session = Depends(get_db)):
-    sell_order = db.query(SellOrders).filter(SellOrders.sell_hash == buy_order.sell_hash).first()
 
-    if not sell_order:
-        raise HTTPException(status_code=404, detail="Sell order not found")
 
-    buy_offer = NFTokenAcceptOffer(
-        account=buy_order.wallet, offer_sequence=sell_order.sell_hash
-    )
-
-    response = sign_and_submit(buy_offer, buy_order.wallet)
-    if response.is_successful():
-        db.query(SellOrders).filter(SellOrders.nft_id == sell_order.nft_id).delete()
-        db.commit()
-    return response.result
-'''
+@router.get('/order')
+def get_order(db: Session = Depends(get_db)):
+    order = db.query(SellOrders).all()
+    return order

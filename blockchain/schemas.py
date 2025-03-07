@@ -44,7 +44,7 @@ class UserAuthResponse(BaseModel):
 PsaCertBase = sqlalchemy_to_pydantic(PsaCert, exclude=["id"])
 SellOrders = sqlalchemy_to_pydantic(SellOrders, exclude=["id", "sell_hash"])
 
-class BuyOrder:
+class BuyOrder(BaseModel):
     wallet: str
     sell_hash: str
 
