@@ -16,7 +16,8 @@ from .. import schemas
 
 XRPL_RPC_URL = "https://s.altnet.rippletest.net:51234"
 client = JsonRpcClient(XRPL_RPC_URL)
-wallet1 = Wallet.from_seed("sEd7CWyK17UAD2VwC8LdAqbDWS896eF")
+#  replace this by using the wallet of the user
+# wallet1 = Wallet.from_seed("sEd7CWyK17UAD2VwC8LdAqbDWS896eF")
 
 router = APIRouter()
 
@@ -62,16 +63,19 @@ def add_sell_order(sell_order: schemas.SellOrders, db: Session = Depends(get_db)
 
 def mint_token(wallet: str, uri: str):
 
+    print("wallet = ", wallet)
+    user_wallet = Wallet.from_seed(wallet)
+    print("wallet address = ", user_wallet.address)
     mint_tx = NFTokenMint(
-        account=wallet1.address,
+        account=user_wallet.address,
         uri=uri.encode("utf-8").hex(),
         flags=8, # Transferable NFT
         transfer_fee=1, # 0.01%
         nftoken_taxon=0
     )
     print("Mint ", mint_tx.to_dict())
-    print("Wallet info ", wallet1.address, wallet1)
-    response = submit_and_wait(mint_tx, client, wallet1)
+    print("Wallet info ", user_wallet.address, user_wallet)
+    response = submit_and_wait(mint_tx, client, user_wallet)
     print("Response ", response)
     return response.result
 
