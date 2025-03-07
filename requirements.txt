@@ -9,3 +9,4 @@ pydantic-sqlalchemy
 pyjwt
 python-multipart
 python-jose
+xrpl-py

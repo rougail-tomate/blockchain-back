@@ -2,7 +2,9 @@ from xrpl.clients import JsonRpcClient
 
 from xrpl.models.requests import AccountNFTs
 from xrpl.models.transactions import NFTokenCreateOffer, NFTokenAcceptOffer, NFTokenMint
-from xrpl.transaction import sign_and_submit 
+from xrpl.transaction import sign_and_submit, submit_and_wait 
+from xrpl.wallet import generate_faucet_wallet, Wallet
+
 
 from ..database import get_db
 
@@ -14,6 +16,7 @@ from .. import schemas
 
 XRPL_RPC_URL = "https://s.altnet.rippletest.net:51234"
 client = JsonRpcClient(XRPL_RPC_URL)
+wallet1 = Wallet.from_seed("sEd7CWyK17UAD2VwC8LdAqbDWS896eF")
 
 router = APIRouter()
 
@@ -58,14 +61,18 @@ def add_sell_order(sell_order: schemas.SellOrders, db: Session = Depends(get_db)
         return response.result
 
 def mint_token(wallet: str, uri: str):
+
     mint_tx = NFTokenMint(
-        account=wallet,
+        account=wallet1.address,
         uri=uri.encode("utf-8").hex(),
         flags=8, # Transferable NFT
         transfer_fee=1, # 0.01%
         nftoken_taxon=0
     )
-    response = client.request(mint_tx, client)
+    print("Mint ", mint_tx.to_dict())
+    print("Wallet info ", wallet1.address, wallet1)
+    response = submit_and_wait(mint_tx, client, wallet1)
+    print("Response ", response)
     return response.result
 
 '''

@@ -28,7 +28,7 @@ class PsaCert(Base):
     description = Column(String, nullable=False)
     price = Column(String, nullable=False)
     image = Column(String, nullable=False)
-
+    wallet = Column(String, nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
 
 class SellOrders(Base):

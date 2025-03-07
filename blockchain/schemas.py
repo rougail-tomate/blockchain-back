@@ -9,6 +9,7 @@ class PsaNumberCreate(BaseModel):
     description: str
     price : str
     image : str
+    wallet: str
 
 class UserCreate(BaseModel):
     username: str
@@ -48,6 +49,12 @@ class BuyOrder:
 
 class PsaCertOut(BaseModel):
     psaCerts: List[PsaCertBase]
+
+    class Config:
+        orm_mode = True
+
+class PsaCertUniqueOut(BaseModel):
+    psaCerts: PsaCertBase
 
     class Config:
         orm_mode = True

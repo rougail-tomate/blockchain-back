@@ -6,6 +6,7 @@ from blockchain.models.user import User, PsaCert
 import requests
 import os
 import json
+from .xrpl import mint_token
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError
 from fastapi import Security
@@ -38,14 +39,14 @@ def get_current_user(token: str = Security(oauth2_scheme), db: Session = Depends
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
-@router.get("/get-number/{cert_number}", response_model=schemas.PsaCertOut)
+@router.get("/get-number/{cert_number}", response_model=schemas.PsaCertUniqueOut)
 def get_psa_number_by_cert_number(cert_number: int, db: Session = Depends(get_db)):
     psa_cert = db.query(PsaCert).filter(PsaCert.cert_number == cert_number).first()
 
     if not psa_cert:
         raise HTTPException(status_code=404, detail="PSA number not found")
 
-    return psa_cert
+    return { "psaCerts": psa_cert }
 
 
 @router.get("/users/get-numbers", response_model=schemas.PsaCertOut)
@@ -74,7 +75,6 @@ def add_psa_number(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-
     cert_data = verify_psa_number(number.number)
     if not cert_data:
         raise HTTPException(status_code=400, detail="Invalid PSA number")
@@ -96,12 +96,16 @@ def add_psa_number(
         title=number.title,
         description=number.description,
         price=number.price,
-        image=number.image
+        image=number.image,
+        wallet=number.wallet
     )
 
     db.add(new_number)
     db.commit()
     db.refresh(new_number)
+
+    res = mint_token(wallet=number.wallet, uri=f"http://localhost:8000/get-number/{number.number}") 
+    print(res)
 
     return new_number
 
