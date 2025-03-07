@@ -14,7 +14,7 @@ from datetime import datetime, timedelta
 
 SECRET_KEY = os.environ.get("SECRET_KEY")
 ALGORITHM = "HS256"
-
+HOST = os.environ.get('HOST_ORIGIN')
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 router = APIRouter()
@@ -143,7 +143,7 @@ def add_psa_number(
     if verify_psa_number_duplicate(number.number, db):
         raise HTTPException(status_code=400, detail="PSA number already exists")
 
-    res = mint_token(wallet=number.wallet, uri=f"http://localhost:8000/get-number/{number.number}")
+    res = mint_token(wallet=number.wallet, uri=f"{HOST}/get-number/{number.number}")
 
     print('TOKEN ID = ', res['meta']['nftoken_id'])
     new_number = PsaCert(
