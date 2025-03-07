@@ -10,6 +10,7 @@ class PsaNumberCreate(BaseModel):
     price : str
     image : str
     wallet: str
+    is_selling: bool
 
 class UserCreate(BaseModel):
     username: str

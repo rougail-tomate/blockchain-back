@@ -58,6 +58,61 @@ def get_psa_numbers_by_user_id(
     psa_certs = db.query(PsaCert).filter(PsaCert.user_id == current_user.id).all()
     return {"psaCerts": psa_certs}
 
+@router.get("/get-all-selling-numbers", response_model=schemas.PsaCertOut)
+def get_all_selling_psa_numbers(
+    db: Session = Depends(get_db)
+):
+    psa_certs = db.query(PsaCert).filter(PsaCert.is_selling == True).all()
+
+    if not psa_certs:
+        return { "psaCerts": [] }
+    
+    return {"psaCerts": psa_certs}
+
+@router.post("/users/sell-numbers", response_model=schemas.PsaCertBase)
+def sell_number(
+    sell_request: dict, 
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user) 
+):
+    cert_id = sell_request.get("id")
+
+    if not cert_id:
+        raise HTTPException(status_code=400, detail="ID manquant")
+
+    cert = db.query(PsaCert).filter(PsaCert.id == cert_id, PsaCert.user_id == current_user.id).first()
+
+    if not cert:
+        raise HTTPException(status_code=404, detail="Certificat non trouvé ou ne vous appartient pas")
+
+    cert.is_selling = True
+    db.commit()
+    db.refresh(cert)
+
+    return cert  
+
+@router.post("/users/unsell-numbers", response_model=schemas.PsaCertBase)
+def unsell_number(
+    sell_request: dict, 
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user) 
+):
+    cert_id = sell_request.get("id")
+
+    if not cert_id:
+        raise HTTPException(status_code=400, detail="ID manquant")
+
+    cert = db.query(PsaCert).filter(PsaCert.id == cert_id, PsaCert.user_id == current_user.id).first()
+
+    if not cert:
+        raise HTTPException(status_code=404, detail="Certificat non trouvé ou ne vous appartient pas")
+
+    cert.is_selling = False
+    db.commit()
+    db.refresh(cert)
+
+    return
+
 @router.get("/get-all-numbers", response_model=schemas.PsaCertOut)
 def get_all_psa_numbers(
     db: Session = Depends(get_db)
@@ -101,7 +156,8 @@ def add_psa_number(
         description=number.description,
         price=number.price,
         image=number.image,
-        wallet=number.wallet
+        wallet=number.wallet,
+        is_selling=number.is_selling
     )
 
     res = mint_token(wallet=number.wallet, uri=f"http://localhost:8000/get-number/{number.number}") 

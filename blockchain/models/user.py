@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 from pydantic import BaseModel
 from ..database import Base
+from sqlalchemy import Boolean
 
 class User(Base):
     __tablename__ = "users"
@@ -31,6 +32,7 @@ class PsaCert(Base):
     image = Column(String, nullable=False)
     wallet = Column(String, nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    is_selling = Column(Boolean, nullable=False, default=False)
 
 class SellOrders(Base):
     __tablename__ = "sell_orders"
