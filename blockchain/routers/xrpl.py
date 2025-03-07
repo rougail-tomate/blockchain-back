@@ -116,7 +116,11 @@ def get_nft_data(wallet_owner, uri):
 
 
 
-@router.get('/order')
+@router.get('/orders')
 def get_order(db: Session = Depends(get_db)):
     order = db.query(SellOrders).all()
     return order
+
+@router.get("/order/{nft_id}")
+def get_order_by_nft_id(nft_id: int, db: Session = Depends(get_db)):
+    order = db.query(SellOrders).filter(SellOrders.nft_id == nft_id).first()
