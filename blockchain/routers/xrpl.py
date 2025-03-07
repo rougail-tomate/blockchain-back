@@ -124,3 +124,4 @@ def get_order(db: Session = Depends(get_db)):
 @router.get("/order/{nft_id}")
 def get_order_by_nft_id(nft_id: int, db: Session = Depends(get_db)):
     order = db.query(SellOrders).filter(SellOrders.nft_id == nft_id).first()
+    return order
