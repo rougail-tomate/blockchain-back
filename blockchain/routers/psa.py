@@ -91,6 +91,28 @@ def sell_number(
 
     return cert  
 
+@router.post("/users/unsell-numbers", response_model=schemas.PsaCertBase)
+def unsell_number(
+    sell_request: dict, 
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user) 
+):
+    cert_id = sell_request.get("id")
+
+    if not cert_id:
+        raise HTTPException(status_code=400, detail="ID manquant")
+
+    cert = db.query(PsaCert).filter(PsaCert.id == cert_id, PsaCert.user_id == current_user.id).first()
+
+    if not cert:
+        raise HTTPException(status_code=404, detail="Certificat non trouvé ou ne vous appartient pas")
+
+    cert.is_selling = False
+    db.commit()
+    db.refresh(cert)
+
+    return
+
 @router.get("/get-all-numbers", response_model=schemas.PsaCertOut)
 def get_all_psa_numbers(
     db: Session = Depends(get_db)
