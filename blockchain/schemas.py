@@ -53,11 +53,5 @@ class PsaCertOut(BaseModel):
     class Config:
         orm_mode = True
 
-class PsaCertUniqueOut(BaseModel):
-    psaCerts: PsaCertBase
-
-    class Config:
-        orm_mode = True
-
 class RefreshTokenRequest(BaseModel):
     refresh_token: str
