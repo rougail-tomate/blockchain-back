@@ -7,10 +7,10 @@ class PsaNumberCreate(BaseModel):
     number: int
     title: str
     description: str
-    price : str
+    #price : str
     image : str
     wallet: str
-    is_selling: bool
+    #is_selling: bool
 
 class UserCreate(BaseModel):
     username: str
@@ -40,12 +40,10 @@ class UserAuthResponse(BaseModel):
     class Config:
         orm_mode = True
 
-
 PsaCertBase = sqlalchemy_to_pydantic(PsaCert, exclude=["id"])
 SellOrders = sqlalchemy_to_pydantic(SellOrders, exclude=["id", "sell_hash"])
 
 class BuyOrder(BaseModel):
-    wallet: str
     sell_hash: str
 
 class PsaCertOut(BaseModel):
@@ -64,5 +62,16 @@ class RetrieveNfts(BaseModel):
 class SellOrder(BaseModel):
     cert_number: int
     user_id: int
-    taker_pay: int
+    taker_pay: int 
     destination: str
+    sell_hash: str
+
+class MarketPlaceCardView(BaseModel):
+    psa_cert: PsaCertBase
+    sell_order: Optional[SellOrder]
+
+class MarketPlaceView(BaseModel):
+    market_place: List[MarketPlaceCardView]
+
+    class Config:
+        orm_mode = True
